@@ -1,0 +1,82 @@
+https://www.youtube.com/watch?v=9t_lBp0FmFs&list=WL&index=50&t=9s
+
+Criando pasta e projeto:
+mkdir app
+cd app
+dotnet new webapi
+
+Código abaixo na nova classe:
+namespace app.Models
+{
+ public class Cliente
+ {
+  public int Id { get; set; }
+  public string Nome { get; set; }
+  public string Telefone { get; set; }
+  public string Email { get; set; }
+ }
+}
+
+Instalação dos pacotes:
+
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite 
+dotnet add package Microsoft.EntityFrameworkCore.Sqlite.Design 
+dotnet add package Microsoft.EntityFrameworkCore.Tools 
+dotnet add package Microsoft.VisualStudio.Web.CodeGeneration.Design
+
+dotnet add package Microsoft.Extensions.PlatformAbstractions --version 1.1.0
+
+//https://docs.microsoft.com/pt-br/ef/core/cli/dotnet
+dotnet tool install --global dotnet-ef
+
+dotnet ef dbcontext scaffold "Data Source=local.db" Microsoft.EntityFrameworkCore.Sqlite -o Models -f -c DemoDbContext 
+
+
+Referência à entidade:
+
+public DbSet＜Cliente＞ Clientes { get; set; }
+ 
+Migração e atualização do banco de dados:
+
+dotnet ef migrations add FirstMigration
+dotnet ef database update
+
+
+Novo controller:
+
+//Antes instale-o
+dotnet tool install -g dotnet-aspnet-codegenerator
+dotnet add package Microsoft.EntityFrameworkCore.SqlServer
+
+dotnet-aspnet-codegenerator -p "app.csproj" controller -name ClienteController -api -m app.Models.Cliente -dc DemoDbContext -outDir Controllers -namespace app.Controllers
+
+dotnet-aspnet-codegenerator -p "WebApiSqlLite.csproj" controller -name ClienteController -api -m WebApiSqlLite.Models.Cliente -dc DemoDbContext -outDir Controllers -namespace WebApiSqlLite.Controllers
+
+
+Referência ao namespace do entity framework no startup:
+using Microsoft.EntityFrameworkCore;
+
+Contexto no startup:
+services.AddDbContext＜Models.DemoDbContext＞(options =＞ options.UseSqlite("Data Source=local.db"));
+
+
+
+Requisição no postman:
+
+{
+ "Nome":"Fernando",
+ "Telefone":"(11)5464654654",
+ "Email":"contato@fernandovezzali.com"
+}
+
+
+docker image build -t web-api-sqllite .     
+docker run -it --rm -p 8080:80  web-api-sqllite
+
+//para descobrir o caminho real
+readlink -f file.txt
+
+//para listar os arquivos com tamanho
+ls -l
+
+COPY "local.db" "/app/local.db"
